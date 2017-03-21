@@ -1158,7 +1158,7 @@ test('apiMiddleware must dispatch an error request FSA on a request error', (t) 
   };
   const actionHandler = nextHandler(doNext);
 
-  t.plan(10);
+  t.plan(5);
   actionHandler(anAction);
 });
 
