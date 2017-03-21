@@ -1,7 +1,6 @@
-redux-api-middleware
+redux-api-isomorphic-fetch-middleware
 ====================
 
-[![Build Status](https://travis-ci.org/agraboso/redux-api-middleware.svg?branch=master)](https://travis-ci.org/agraboso/redux-api-middleware) [![Coverage Status](https://coveralls.io/repos/agraboso/redux-api-middleware/badge.svg?branch=master&service=github)](https://coveralls.io/github/agraboso/redux-api-middleware?branch=master)
 
 [Redux middleware](http://rackt.github.io/redux/docs/advanced/Middleware.html) for calling an API.
 
@@ -28,14 +27,14 @@ redux-api-middleware
 
 This middleware receives [*Redux Standard API-calling Actions*](#redux-standard-api-calling-actions) (RSAAs) and dispatches [*Flux Standard Actions*](#flux-standard-actions) (FSAs) to the next middleware.
 
-RSAAs are identified by the presence of a `[CALL_API]` property, where [`CALL_API`](#call_api) is a `Symbol` defined in, and exported by `redux-api-middleware`. They contain information describing an API call and three different types of FSAs, known as the *request*, *success* and *failure* FSAs.
+RSAAs are identified by the presence of a `[CALL_API]` property, where [`CALL_API`](#call_api) is a `Symbol` defined in, and exported by `redux-api-isomorphic-fetch-middleware`. They contain information describing an API call and three different types of FSAs, known as the *request*, *success* and *failure* FSAs.
 
 ### A simple example
 
 The following is a minimal RSAA action:
 
 ```js
-import { CALL_API } from `redux-api-middleware`;
+import { CALL_API } from `redux-api-isomorphic-fetch-middleware`;
 
 {
   [CALL_API]: {
@@ -46,7 +45,7 @@ import { CALL_API } from `redux-api-middleware`;
 }
 ```
 
-Upon receiving this action, `redux-api-middleware` will
+Upon receiving this action, `redux-api-isomorphic-fetch-middleware` will
 
 1. check that it is indeed a valid RSAA action;
 2. dispatch the following *request* FSA to the next middleware;
@@ -82,14 +81,14 @@ Upon receiving this action, `redux-api-middleware` will
     }
     ```
 
-We have tiptoed around error-handling issues here. For a thorough walkthrough of the `redux-api-middleware` lifecycle, see [Lifecycle](#lifecycle) below.
+We have tiptoed around error-handling issues here. For a thorough walkthrough of the `redux-api-isomorphic-fetch-middleware` lifecycle, see [Lifecycle](#lifecycle) below.
 
 ## Installation
 
-`redux-api-middleware` is available on [npm](https://www.npmjs.com/package/redux-api-middleware).
+`redux-api-isomorphic-fetch-middleware` is available on [npm](https://www.npmjs.com/package/redux-api-isomorphic-fetch-middleware).
 
 ```
-$ npm install redux-api-middleware --save
+$ npm install redux-api-isomorphic-fetch-middleware --save
 ```
 
 To use it, wrap the standard Redux store with it. Here is an example setup. For more information (for example, on how to add several middlewares), consult the [Redux documentation](http://redux.js.org).
@@ -98,7 +97,7 @@ To use it, wrap the standard Redux store with it. Here is an example setup. For 
 
 ```js
 import { createStore, applyMiddleware, combineReducers } from 'redux';
-import { apiMiddleware } from 'redux-api-middleware';
+import { apiMiddleware } from 'redux-api-isomorphic-fetch-middleware';
 import reducers from './reducers';
 
 const reducer = combineReducers(reducers);
@@ -137,7 +136,7 @@ It must be one of the strings `GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE` or
 
 The body of the API call.
 
-`redux-api-middleware` uses [`isomorphic-fetch`](https://github.com/matthew-andrews/isomorphic-fetch) to make the API call. `[CALL_API].body` should hence be a valid body according to the the [fetch specification](https://fetch.spec.whatwg.org). In most cases, this will be a JSON-encoded string or a [`FormData`](https://developer.mozilla.org/en/docs/Web/API/FormData) object.
+`redux-api-isomorphic-fetch-middleware` uses [`isomorphic-fetch`](https://github.com/matthew-andrews/isomorphic-fetch) to make the API call. `[CALL_API].body` should hence be a valid body according to the the [fetch specification](https://fetch.spec.whatwg.org). In most cases, this will be a JSON-encoded string or a [`FormData`](https://developer.mozilla.org/en/docs/Web/API/FormData) object.
 
 #### `[CALL_API].headers`
 
@@ -171,28 +170,28 @@ It must be one of the following strings:
 
 In some cases, the data you would like to fetch from the server may already be cached in you Redux store. Or you may decide that the current user does not have the necessary permissions to make some request.
 
-You can tell `redux-api-middleware` to not make the API call through `[CALL_API].bailout`. If the value is `true`, the RSAA will die here, and no FSA will be passed on to the next middleware.
+You can tell `redux-api-isomorphic-fetch-middleware` to not make the API call through `[CALL_API].bailout`. If the value is `true`, the RSAA will die here, and no FSA will be passed on to the next middleware.
 
 A more useful possibility is to give `[CALL_API].bailout` a function. At runtime, it will be passed the state of your Redux store as its only argument, if the return value of the function is `true`, the API call will not be made.
 
 ### Lifecycle
 
-The `[CALL_API].types` property controls the output of `redux-api-middleware`. The simplest form it can take is an array of length 3 consisting of string constants (or symbols), as in our [example](#a-simple-example) above. This results in the default behavior we now describe.
+The `[CALL_API].types` property controls the output of `redux-api-isomorphic-fetch-middleware`. The simplest form it can take is an array of length 3 consisting of string constants (or symbols), as in our [example](#a-simple-example) above. This results in the default behavior we now describe.
 
-1. When `redux-api-middleware` receives an action, it first checks whether it has a `[CALL_API]` property. If it does not, it was clearly not intended for processing with `redux-api-middleware`, and so it is unceremoniously passed on to the next middleware.
+1. When `redux-api-isomorphic-fetch-middleware` receives an action, it first checks whether it has a `[CALL_API]` property. If it does not, it was clearly not intended for processing with `redux-api-isomorphic-fetch-middleware`, and so it is unceremoniously passed on to the next middleware.
 
 2. It is now time to validate the action against the [RSAA definition](#redux-standard-api-calling-actions). If there are any validation errors, a *request* FSA will be dispatched (if at all possible) with the following properties:
     - `type`: the string constant in the first position of the `[CALL_API].types` array;
     - `payload`: an [`InvalidRSAA`](#invalidrsaa) object containing a list of said validation errors;
     - `error: true`.
 
-  `redux-api-middleware` will perform no further operations. In particular, no API call will be made, and the incoming RSAA will die here.
+  `redux-api-isomorphic-fetch-middleware` will perform no further operations. In particular, no API call will be made, and the incoming RSAA will die here.
 
-3. Now that `redux-api-middleware` is sure it has received a valid RSAA, it will try making the API call. If everything is alright, a *request* FSA will be dispatched with the following property:
+3. Now that `redux-api-isomorphic-fetch-middleware` is sure it has received a valid RSAA, it will try making the API call. If everything is alright, a *request* FSA will be dispatched with the following property:
   - `type`: the string constant in the first position of the `[CALL_API].types` array.
 
   But errors may pop up at this stage, for several reasons:
-  - `redux-api-middleware` has to call those of `[CALL_API].bailout`, `[CALL_API].endpoint` and `[CALL_API].headers` that happen to be a function, which may throw an error;
+  - `redux-api-isomorphic-fetch-middleware` has to call those of `[CALL_API].bailout`, `[CALL_API].endpoint` and `[CALL_API].headers` that happen to be a function, which may throw an error;
   - `isomorphic-fetch` may throw an error: the RSAA definition is not strong enough to preclude that from happening (you may, for example, send in a `[CALL_API].body` that is not valid according to the fetch specification &mdash; mind the SHOULDs in the [RSAA definition](#redux-standard-api-calling-actions));
   - a network failure occurs (the network is unreachable, the server responds with an error,...).
 
@@ -201,7 +200,7 @@ The `[CALL_API].types` property controls the output of `redux-api-middleware`. T
   - `payload`: a [`RequestError`](#requesterror) object containing an error message;
   - `error: true`.
 
-4. If `redux-api-middleware` receives a response from the server with a status code in the 200 range, a *success* FSA will be dispatched with the following properties:
+4. If `redux-api-isomorphic-fetch-middleware` receives a response from the server with a status code in the 200 range, a *success* FSA will be dispatched with the following properties:
   - `type`: the string constant in the second position of the `[CALL_API].types` array;
   - `payload`: if the `Content-Type` header of the response is set to something JSONy (see [*Success* type descriptors](#success-type-descriptors) below), the parsed JSON response of the server, or undefined otherwise.
 
@@ -212,15 +211,15 @@ The `[CALL_API].types` property controls the output of `redux-api-middleware`. T
 
 ### Customizing the dispatched FSAs
 
-It is possible to customize the output of `redux-api-middleware` by replacing one or more of the string constants (or symbols) in `[CALL_API].types` by a type descriptor.
+It is possible to customize the output of `redux-api-isomorphic-fetch-middleware` by replacing one or more of the string constants (or symbols) in `[CALL_API].types` by a type descriptor.
 
 A *type descriptor* is a plain JavaScript object that will be used as a blueprint for the dispatched FSAs. As such, type descriptors must have a `type` property, intended to house the string constant or symbol specifying the `type` of the resulting FSAs.
 
 They may also have `payload` and `meta` properties, which may be of any type. Functions passed as `payload` and `meta` properties of type descriptors will be evaluated at runtime. The signature of these functions should be different depending on whether the type descriptor refers to *request*, *success* or *failure* FSAs &mdash; keep reading.
 
-If a custom `payload` and `meta` function throws an error, `redux-api-middleware` will dispatch an FSA with its `error` property set to `true`, and an `InternalError` object as its `payload`.
+If a custom `payload` and `meta` function throws an error, `redux-api-isomorphic-fetch-middleware` will dispatch an FSA with its `error` property set to `true`, and an `InternalError` object as its `payload`.
 
-A noteworthy feature of `redux-api-middleware` is that it accepts Promises (or function that return them) in `payload` and `meta` properties of type descriptors, and it will wait for them to resolve before dispatching the FSA &mdash; so no need to use anything like `redux-promise`.
+A noteworthy feature of `redux-api-isomorphic-fetch-middleware` is that it accepts Promises (or function that return them) in `payload` and `meta` properties of type descriptors, and it will wait for them to resolve before dispatching the FSA &mdash; so no need to use anything like `redux-promise`.
 
 #### *Request* type descriptors
 
@@ -281,7 +280,7 @@ If you do not need access to the action itself or the state of your Redux store,
 By default, *request* FSAs will not contain `payload` and `meta` properties.
 
 Error *request* FSAs might need to obviate these custom settings though.
-  - *Request* FSAs resulting from invalid RSAAs (step 2 in [Lifecycle](#lifecycle) above) cannot be customized. `redux-api-middleware` will try to dispatch an error *request* FSA, but it might not be able to (it may happen that the invalid RSAA does not contain a value that can be used as the *request* FSA `type` property, in which case `redux-api-middleware` will let the RSAA die silently).
+  - *Request* FSAs resulting from invalid RSAAs (step 2 in [Lifecycle](#lifecycle) above) cannot be customized. `redux-api-isomorphic-fetch-middleware` will try to dispatch an error *request* FSA, but it might not be able to (it may happen that the invalid RSAA does not contain a value that can be used as the *request* FSA `type` property, in which case `redux-api-isomorphic-fetch-middleware` will let the RSAA die silently).
   - *Request* FSAs resulting in request errors (step 3 in [Lifecycle](#lifecycle) above) will honor the user-provided `meta`, but will ignore the user-provided `payload`, which is reserved for the default error object.
 
 #### *Success* type descriptors
@@ -337,7 +336,7 @@ const userSchema = new Schema('users');
 }
 ```
 
-The above pattern of parsing the JSON body of the server response is probably quite common, so `redux-api-middleware` exports a utility function `getJSON` which allows for the above `payload` function to be written as
+The above pattern of parsing the JSON body of the server response is probably quite common, so `redux-api-isomorphic-fetch-middleware` exports a utility function `getJSON` which allows for the above `payload` function to be written as
 ```js
 (action, state, res) => {
   return getJSON(res).then((json) => normalize(json, { users: arrayOf(userSchema) }));
@@ -394,11 +393,11 @@ By default, *failure* FSAs will not contain a `meta` property, while their `payl
 
 ### Exports
 
-The following objects are exported by `redux-api-middleware`.
+The following objects are exported by `redux-api-isomorphic-fetch-middleware`.
 
 #### `CALL_API`
 
-A JavaScript `Symbol` whose presence as a key in an action signals that `redux-api-middleware` should process said action.
+A JavaScript `Symbol` whose presence as a key in an action signals that `redux-api-isomorphic-fetch-middleware` should process said action.
 
 #### `apiMiddleware`
 
@@ -598,12 +597,7 @@ $ npm install && npm test
 
 MIT
 
-## Projects using redux-api-middleware
-
-- [react-trebuchet](https://github.com/barrystaes/react-trebuchet/tree/test-bottledapi-apireduxmiddleware) (experimental/opinionated fork of react-slingshot for SPA frontends using REST JSON API backends)
-
-If your opensource project uses (or works with) `redux-api-middleware` we would be happy to list it here!
-
 ## Acknowledgements
 
+The code was forked from [redux-api-middleware](https://github.com/agraboso/redux-api-middleware) and has been updated with the latest libraries to work with [webpack 2](https://www.npmjs.com/package/webpack).
 The code in this module was originally extracted from the [real-world](https://github.com/rackt/redux/blob/master/examples/real-world/middleware/api.js) example in the [redux](https://github.com/rackt/redux) repository, due to [Dan Abramov](https://github.com/gaearon). It has evolved thanks to issues filed by, and pull requests contributed by, other developers.
