@@ -12,7 +12,7 @@
     "test": "babel-node test/index.js | tap-spec"
   },
   "repository": "agraboso/redux-api-middleware",
-  "homepage": "https://github.com/agraboso/redux-api-middleware",
+  "homepage": "https://github.com/jaselv/redux-api-middleware",
   "keywords": [
     "redux",
     "api",
@@ -21,8 +21,7 @@
     "flux"
   ],
   "author": {
-    "name": "Alberto Garcia-Raboso",
-    "email": "agraboso@gmail.com"
+    "name": "Justin Brees"
   },
   "license": "MIT",
   "dependencies": {
